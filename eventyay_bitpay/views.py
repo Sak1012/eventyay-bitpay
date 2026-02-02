@@ -18,10 +18,10 @@ from django.views import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from pretix.base.models import Order, OrderPayment, Quota
-from pretix.base.services.locking import LockTimeoutException
-from pretix.control.permissions import event_permission_required
-from pretix.multidomain.urlreverse import build_absolute_uri, eventreverse
+from eventyay.base.models import Order, OrderPayment, Quota
+from eventyay.base.services.locking import LockTimeoutException
+from eventyay.control.permissions import event_permission_required
+from eventyay.multidomain.urlreverse import build_absolute_uri, eventreverse
 
 from .models import ReferencedBitPayObject
 from .payment import BitPay
@@ -46,10 +46,10 @@ def redirect_view(request, *args, **kwargs):
         params["go"] = "1"
         r = render(
             request,
-            "pretix_bitpay/redirect.html",
+            "eventyay_bitpay/redirect.html",
             {
                 "url": build_absolute_uri(
-                    request.event, "plugins:pretix_bitpay:redirect"
+                    request.event, "plugins:eventyay_bitpay:redirect"
                 )
                 + "?"
                 + urllib.parse.urlencode(params),
@@ -73,7 +73,7 @@ def webhook(request, *args, **kwargs):
         ).get(reference=objid)
         if rso.order.event != request.event:
             return HttpResponse("Unable to detect event", status=200)
-        rso.order.log_action("pretix_bitpay.event", data=event_json)
+        rso.order.log_action("eventyay_bitpay.event", data=event_json)
         return process_invoice(rso.order, rso.payment, objid)
     except ReferencedBitPayObject.DoesNotExist:
         return HttpResponse("Unable to detect event", status=200)
@@ -122,7 +122,7 @@ def process_invoice(order, payment, invoice_id):
                 payment.info = json.dumps(src)
                 payment.save()
                 payment.order.log_action(
-                    "pretix.event.order.payment.failed",
+                    "eventyay.event.order.payment.failed",
                     {
                         "local_id": payment.local_id,
                         "provider": payment.provider,
@@ -135,7 +135,7 @@ def process_invoice(order, payment, invoice_id):
                 payment.save()
                 payment.create_external_refund()
                 payment.order.log_action(
-                    "pretix.event.order.payment.failed",
+                    "eventyay.event.order.payment.failed",
                     {
                         "local_id": payment.local_id,
                         "provider": payment.provider,

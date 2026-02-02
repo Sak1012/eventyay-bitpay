@@ -15,9 +15,9 @@ from django.utils.translation import gettext_lazy as _  # NoQA
 from i18nfield.forms import I18nFormField, I18nTextInput
 from i18nfield.strings import LazyI18nString
 from json import JSONDecodeError
-from pretix.base.models import OrderPayment, OrderRefund
-from pretix.base.payment import BasePaymentProvider, PaymentException
-from pretix.multidomain.urlreverse import build_absolute_uri
+from eventyay.base.models import OrderPayment, OrderRefund
+from eventyay.base.payment import BasePaymentProvider, PaymentException
+from eventyay.multidomain.urlreverse import build_absolute_uri
 from requests import RequestException
 
 from .models import ReferencedBitPayObject
@@ -53,11 +53,11 @@ class BitPay(BasePaymentProvider):
             ).format(
                 _(
                     "To accept payments via BitPay, you will need an account at BitPay. By clicking on the "
-                    "following button, you can connect pretix to your BitPay account. A BitPay site will open in a new "
+                    "following button, you can connect eventyay to your BitPay account. A BitPay site will open in a new "
                     "tab. Return to this page and refresh it after you authorized the token at BitPay."
                 ),
                 reverse(
-                    "plugins:pretix_bitpay:auth.start",
+                    "plugins:eventyay_bitpay:auth.start",
                     kwargs={
                         "organizer": self.event.organizer.slug,
                         "event": self.event.slug,
@@ -65,7 +65,7 @@ class BitPay(BasePaymentProvider):
                 ),
                 _("Connect with BitPay"),
                 reverse(
-                    "plugins:pretix_bitpay:auth.start",
+                    "plugins:eventyay_bitpay:auth.start",
                     kwargs={
                         "organizer": self.event.organizer.slug,
                         "event": self.event.slug,
@@ -78,7 +78,7 @@ class BitPay(BasePaymentProvider):
                     "the URL here you want to connect to."
                 ),
                 reverse(
-                    "plugins:pretix_bitpay:auth.start",
+                    "plugins:eventyay_bitpay:auth.start",
                     kwargs={
                         "organizer": self.event.organizer.slug,
                         "event": self.event.slug,
@@ -91,7 +91,7 @@ class BitPay(BasePaymentProvider):
                 "<button formaction='{}' class='btn btn-danger'>{}</button>"
             ).format(
                 reverse(
-                    "plugins:pretix_bitpay:auth.disconnect",
+                    "plugins:eventyay_bitpay:auth.disconnect",
                     kwargs={
                         "organizer": self.event.organizer.slug,
                         "event": self.event.slug,
@@ -130,7 +130,7 @@ class BitPay(BasePaymentProvider):
     def redirect(self, request, url):
         if request.session.get("iframe_session", False):
             return (
-                build_absolute_uri(request.event, "plugins:pretix_bitpay:redirect")
+                build_absolute_uri(request.event, "plugins:eventyay_bitpay:redirect")
                 + "?data="
                 + signing.dumps(
                     {
@@ -148,12 +148,12 @@ class BitPay(BasePaymentProvider):
             return str(url)
 
     def payment_form_render(self, request) -> str:
-        template = get_template("pretix_bitpay/checkout_payment_form.html")
+        template = get_template("eventyay_bitpay/checkout_payment_form.html")
         ctx = {"request": request, "event": self.event, "settings": self.settings}
         return template.render(ctx)
 
     def checkout_confirm_render(self, request) -> str:
-        template = get_template("pretix_bitpay/checkout_payment_confirm.html")
+        template = get_template("eventyay_bitpay/checkout_payment_confirm.html")
         ctx = {"request": request, "event": self.event, "settings": self.settings}
         return template.render(ctx)
 
@@ -193,11 +193,11 @@ class BitPay(BasePaymentProvider):
                     "transactionSpeed": "medium",
                     "extendedNotifications": "true",
                     "notificationURL": build_absolute_uri(
-                        self.event, "plugins:pretix_bitpay:webhook"
+                        self.event, "plugins:eventyay_bitpay:webhook"
                     ),
                     "redirectURL": build_absolute_uri(
                         self.event,
-                        "plugins:pretix_bitpay:return",
+                        "plugins:eventyay_bitpay:return",
                         kwargs={
                             "order": payment.order.code,
                             "payment": payment.pk,
@@ -226,7 +226,7 @@ class BitPay(BasePaymentProvider):
         return self.redirect(request, inv["url"])
 
     def payment_pending_render(self, request: HttpRequest, payment: OrderPayment):
-        template = get_template("pretix_bitpay/pending.html")
+        template = get_template("eventyay_bitpay/pending.html")
         ctx = {
             "request": request,
             "event": self.event,
@@ -236,7 +236,7 @@ class BitPay(BasePaymentProvider):
         return template.render(ctx)
 
     def payment_control_render(self, request: HttpRequest, payment: OrderPayment):
-        template = get_template("pretix_bitpay/control.html")
+        template = get_template("eventyay_bitpay/control.html")
         ctx = {
             "request": request,
             "event": self.event,
@@ -336,7 +336,7 @@ class BitPay(BasePaymentProvider):
 
         for le in (
             obj.order.all_logentries()
-            .filter(action_type="pretix_bitpay.event")
+            .filter(action_type="eventyay_bitpay.event")
             .exclude(data="")
         ):
             d = le.parsed_data

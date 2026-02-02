@@ -6,19 +6,19 @@ from . import __version__
 
 
 class BitpayApp(AppConfig):
-    name = "pretix_bitpay"
+    name = "eventyay_bitpay"
     verbose_name = _("BitPay")
 
-    class PretixPluginMeta:
+    class EventyayPluginMeta:
         name = _("BitPay")
-        author = "Raphael Michel"
+        author = "FOSSASIA"
         category = "PAYMENT"
         version = __version__
-        compatibility = "pretix>=4.16.0"
+        compatibility = "eventyay>=4.16.0"
         description = _(
             "Receive Crypto payments via BitPay-compatible payment providers."
         )
-        picture = "pretix_bitpay/bitpay-logo.svg"
+        picture = "eventyay_bitpay/bitpay-logo.svg"
 
     def ready(self):
         from . import signals  # NOQA
