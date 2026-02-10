@@ -263,7 +263,7 @@ def auth_start(request, **kwargs):
         r = requests.post(
             url + "/tokens",
             json={
-                "label": settings.PRETIX_INSTANCE_NAME,
+                "label": settings.INSTANCE_NAME,
                 "facade": "merchant",
                 "id": sin,
             },
